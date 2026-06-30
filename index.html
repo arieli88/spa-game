@@ -1,0 +1,952 @@
+<!-- אריאל פלישבסקי - תאריך כתיבת העבודה: 28.06.2026 -->
+<!doctype html>
+<!--כיוון מימין לשמאל לכל הדף -->
+<html lang="he" dir="rtl">
+
+<head>
+  <meta charset="utf-8" />
+  <!--גורם לדף להתאים את עצמו למסכי מובייל ולא להישאר קטן -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!--הכותרת שמופיעה בלשונית הדפדפן -->
+  <title>משחק הזיכרון האינטראקטיבי - חוויית למידה ב</title>
+  <meta name="description"
+    content="משחק זיכרון מודרני ואינטראקטיבי ברמות קושי שונות. נבנה כ-Single Page Application נגיש וסמנטי ללא שימוש ב-Frameworks." />
+  <meta name="keywords" content="משחק זיכרון, HTML5, CSS3, JavaScript, SPA, נגישות, משחק אינטראקטיבי" />
+  <meta name="author" content="אריאל פלישבסקי" />
+  <!-- favicon = האייקון הקטן ליד שם הדף בלשונית -->
+  <link rel="icon" type="image/png" href="https://m.media-amazon.com/images/I/71woYe9OPoL.png" />
+  <!-- ספריית animate.css חיצונית - מוסיפה אנימציות מוכנות (bounce, pulse) בלי לכתוב אותן ב-CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+  <style>
+    /* ============================================================
+         CSS = עיצוב המראה של הדף (צבעים, מרווחים, אנימציות)
+         כל כלל CSS = סלקטור { מאפיין: ערך; }
+         ============================================================ */
+
+    /* --- body: רקע כללי של כל הדף ---
+         איפה בדף: הרקע האפור שמסביב לכל התיבות הלבנות */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+      background: #f5f5f5;
+      color: #333;
+    }
+
+    /* --- header, section, footer: רקע לבן משותף ---
+         איפה בדף: הכותרת העליונה, כל אזור תוכן (מסך בית, משחק, Q&A), והפוטר */
+    header,
+    section,
+    footer {
+      background: #fff;
+    }
+
+    /* --- פינות מעוגלות וצל לכרטיסיות ---
+         איפה בדף: אפקט "כרטיס" מרחף ל-header ולכל section */
+    header,
+    section {
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    /* --- header בלבד: מרווחים ---
+         איפה בדף: התיבה הלבנה בראש הדף עם הכותרת והתפריט */
+    header {
+      margin-bottom: 30px;
+      padding: 15px;
+    }
+
+    /* --- h1: כותרת ראשית ---
+         איפה בדף: "משחק הזיכרון האינטראקטיבי" בצבע כחול */
+    h1 {
+      color: #0066cc;
+      margin: 10px 0;
+    }
+
+    /* --- nav: תפריט ניווט ---
+         איפה בדף: שורת הכפתורים הכחולים מתחת לכותרת */
+    nav {
+      margin-top: 15px;
+    }
+
+    /* --- .besiyata: תגית "בס״ד" קבועה ---
+         איפה בדף: הפינה הימנית העליונה, תמיד נשארת שם גם בגלילה (fixed) */
+    .besiyata {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      z-index: 1000;
+      margin: 0;
+      padding: 6px 12px;
+      font-size: 14px;
+      font-weight: bold;
+      color: #004999;
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid #0066cc;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* --- .hidden: מסתיר אלמנטים ---
+         איפה בדף: כל section שלא פעיל (הוראות, משחק, Q&A) - SPA מציג רק אזור אחד */
+    .hidden {
+      display: none !important;
+    }
+
+    /* --- main: אזור התוכן המרכזי ---
+         איפה בדף: מגביל רוחב ל-800px ומרכז את כל התוכן באמצע המסך */
+    main {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    /* --- section: מרווחים פנימיים ---
+         איפה בדף: ריווח בתוך כל תיבת תוכן לבנה */
+    section {
+      padding: 25px;
+      margin-bottom: 30px;
+    }
+
+    /* --- fieldset.level-picker: קבוצת כפתורי רמת קושי ---
+         מה זה fieldset? תגית HTML סמנטית שמקבצת יחד שדות/כפתורים קשורים
+         legend = הכותרת של הקבוצה ("בחירת רמת קושי")
+         איפה בדף: שלושת הכפתורים הירוק/כתום/אדום באזור המשחק */
+    fieldset.level-picker {
+      margin: 20px 0;
+      border: none;
+      padding: 0;
+    }
+
+    fieldset.level-picker legend {
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    /* --- עיצוב משותף לכפתורי רמה ולכפתורי פעולה ---
+         איפה בדף: כפתורי קל/בינוני/קשה + כפתור "התחל משחק" + כפתור "איפוס" */
+    fieldset.level-picker button,
+    .action-btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    fieldset.level-picker button {
+      display: inline-block;
+      margin: 5px;
+      font-size: 18px;
+      transition: 0.2s;
+    }
+
+    /* --- צבעי רמות הקושי ---
+         איפה בדף: ירוק=קל, כתום=בינוני, אדום=קשה */
+    .easy-link {
+      background: #28a745;
+    }
+
+    .medium-link {
+      background: #fd7e14;
+    }
+
+    .hard-link {
+      background: #dc3545;
+    }
+
+    /* --- אפקט hover על כפתורי רמה ---
+         איפה בדף: כשמעבירים עכבר - הכפתור גדל מעט */
+    fieldset.level-picker button:hover {
+      opacity: 0.9;
+      transform: scale(1.05);
+    }
+
+    /* --- אנימציית pulse אינסופית ---
+         איפה בדף: כפתור "לחצו כאן לתחילת המשחק" מהבהב */
+    .animate__pulse {
+      animation-iteration-count: infinite;
+    }
+
+    /* --- table: לוח המשחק ---
+         איפה בדף: רשת הקלפים בכל רמה */
+    table {
+      margin: 20px auto;
+      border-collapse: collapse;
+      background: #fff;
+    }
+
+    /* --- td: תא בודד בטבלה ---
+         איפה בדף: הריבוע שמכיל קלף אחד | perspective = עומק לסיבוב 3D */
+    td {
+      border: 2px solid #ddd;
+      width: 95px;
+      height: 95px;
+      padding: 5px;
+      perspective: 1000px;
+    }
+
+    /* --- גודל הקלף ותא המרכז ---
+         איפה בדף: כל כפתור-קלף ותא "HTML GAME" ברמה הבינונית */
+    td button.card,
+    figure.center-cell {
+      width: 85px;
+      height: 85px;
+      margin: 0 auto;
+    }
+
+    /* --- כפתור הקלף עצמו ---
+         איפה בדף: הקלף הלחיץ - ללא מסגרת, שקוף, עם סמן יד */
+    td button.card {
+      display: block;
+      padding: 0;
+      border: none;
+      background: none;
+      cursor: pointer;
+    }
+
+    td button.card:disabled {
+      cursor: default;
+    }
+
+    /* --- figure בתוך הקלף: מנגנון הסיבוב 3D ---
+         איפה בדף: האנימציה של הפיכת הקלף (0.6 שניות)
+         preserve-3d = שומר על אפקט תלת-ממדי אמיתי */
+    td button.card figure {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.6s ease;
+      transform-origin: center;
+      will-change: transform;
+    }
+
+    /* --- .open = קלף פתוח ---
+         איפה בדף: כשלוחצים על קלף - הוא מסתובב 180 מעלות וחושף תמונה
+         JavaScript מוסיף class="open" לכפתור */
+    td button.card.open figure {
+      transform: rotateY(180deg);
+    }
+
+    figure.center-cell {
+      position: relative;
+    }
+
+    /* --- שני צדי הקלף: גב (figcaption) ופרונט (img) ---
+         איפה בדף: גב אפור כשסגור, תמונה כשפתוח
+         backface-visibility:hidden = מסתיר את הצד האחורי של כל פנים */
+    button.card figure figcaption,
+    button.card figure img,
+    figure.center-cell figcaption {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 8px;
+      backface-visibility: hidden;
+    }
+
+    /* --- התמונה על גב הקלף (מוסתרת עד הסיבוב) ---
+         איפה בדף: התמונה מ-Picsum שנחשפת בלחיצה */
+    button.card figure img {
+      object-fit: cover;
+      display: block;
+      transform: rotateY(180deg);
+      transform-origin: center;
+    }
+
+    /* --- גב הקלף הסגור ---
+         איפה בדף: הריבוע האפור שרואים לפני שלוחצים */
+    button.card figure figcaption {
+      background: #333;
+    }
+
+    /* --- תא המרכז ברמה בינונית ---
+         איפה בדף: הריבוע השחור עם הטקסט "HTML GAME" באמצע לוח 3x3 */
+    figure.center-cell figcaption {
+      background: #222;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    /* --- .action-btn: כפתורי פעולה כחולים ---
+         איפה בדף: "לחצו כאן לתחילת המשחק" ו"איפוס וערבוב מחדש" */
+    .action-btn {
+      margin-top: 15px;
+      background: #0066cc;
+      font-size: 16px;
+      transition: 0.3s;
+    }
+
+    .action-btn:hover {
+      background: #004999;
+      transform: scale(1.05);
+    }
+
+    /* --- .win: הודעת ניצחון ---
+         איפה בדף: "כל הכבוד!" - מוסתרת עד שניצחים (display:none) */
+    .win {
+      color: #28a745;
+      font-size: 26px;
+      font-weight: bold;
+      display: none;
+      margin-top: 20px;
+    }
+
+    /* --- details + summary: שאלות נפתחות ב-Q&A ---
+         איפה בדף: כל שאלה שניתן ללחוץ ולפתוח את התשובה */
+    details {
+      background: #f9f9f9;
+      padding: 12px;
+      margin: 10px 0;
+      border-right: 4px solid #0066cc;
+      text-align: right;
+      border-radius: 4px;
+    }
+
+    summary {
+      font-weight: bold;
+      cursor: pointer;
+      outline: none;
+    }
+
+    /* --- רשימה ממוספרת בהוראות ---
+         איפה בדף: 4 שלבי המשחק במסך ההוראות */
+    ol {
+      text-align: right;
+      line-height: 1.6;
+      display: inline-block;
+    }
+
+    /* --- footer: כותרת תחתונה ---
+         איפה בדף: זכויות יוצרים ושנת 2026 בתחתית הדף */
+    footer {
+      margin-top: 5px;
+      padding: 15px;
+      font-size: 14px;
+      color: #666;
+      border-radius: 8px;
+    }
+
+    /* --- רשימת התפריט ללא נקודות ---
+         איפה בדף: הכפתורים הכחולים בשורה אחת */
+    nav ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    nav li {
+      display: inline-block;
+      margin: 5px;
+    }
+
+    /* --- קישורי ניווט ---
+         איפה בדף: כפתורי מסך הבית / הוראות / משחק / Q&A / אודות */
+    nav a {
+      display: inline-block;
+      background: #0066cc;
+      color: #fff;
+      text-decoration: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 8px;
+      transition: 0.3s ease;
+    }
+
+    /* --- hover ונגישות מקלדת לתפריט ---
+         איפה בדף: כפתור מתכהה ועולה מעט + מסגרת כתומה בניווט מקלדת */
+    nav a:hover,
+    nav a:focus-visible {
+      background: #004999;
+      transform: translateY(-2px);
+      outline: 3px solid #fd7e14;
+    }
+
+    /* --- skip-link: נגישות - דילוג לתוכן ---
+         איפה בדף: מוסתר, מופיע רק בלחיצת Tab למשתמשי מקלדת */
+    .skip-link {
+      position: absolute;
+      top: -100px;
+      left: 12px;
+      z-index: 1100;
+      padding: 10px 16px;
+      background: #004999;
+      color: #fff;
+      font-weight: bold;
+      text-decoration: none;
+      border-radius: 8px;
+    }
+
+    .skip-link:focus {
+      top: 12px;
+      outline: 3px solid #fd7e14;
+    }
+
+    /* --- .status-live: הודעות סטטוס דינמיות ---
+         איפה בדף: השורה הכחולה מעל התוכן ("עברתם לאזור...", "קלף נפתח") */
+    .status-live {
+      min-height: 1.5em;
+      margin: 10px 0;
+      font-weight: bold;
+      color: #004999;
+    }
+
+    /* --- מסגרת כתומה בפוקוס מקלדת ---
+         איפה בדף: כל כפתור או שאלה ב-Q&A כשמגיעים אליהם עם Tab */
+    button:focus-visible,
+    summary:focus-visible {
+      outline: 3px solid #fd7e14;
+      outline-offset: 2px;
+    }
+
+    /* --- נגן המוזיקה במסך הבית ---
+         איפה בדף: פס השמעה מתחת לטקסט "לחץ כאן" */
+    #welcome audio {
+      display: block;
+      margin: 15px auto 0;
+      width: min(100%, 300px);
+    }
+
+    /* --- כותרת הטבלה (caption) ---
+         איפה בדף: "לוח משחק ברמת קושי קלה" מעל הקלפים */
+    table caption {
+      caption-side: top;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #0066cc;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- body = כל מה שהמשתמש רואה על המסך -->
+
+  <!-- p עם class=besiyata: טקסט קבוע בפינה, לא חלק מהתוכן המרכזי -->
+  <p class="besiyata">בס״ד</p>
+
+  <!-- skip-link: קישור נגישות - קופץ ישר ל-main למשתמשי מקלדת -->
+  <a class="skip-link" href="#main-content">דלג לתוכן המרכזי</a>
+
+  <!-- header = כותרת עליונה של האתר (לא של כל עמוד - של כל האפליקציה) -->
+  <header>
+    <!-- animate__animated animate__bounce = מחלקות מ-animate.css לקפיצה בפתיחה -->
+    <h1 class="animate__animated animate__bounce">
+      משחק הזיכרון האינטראקטיבי
+    </h1>
+    <!-- nav = אזור ניווט | aria-label = תיאור לקוראי מסך -->
+    <nav aria-label="תפריט ניווט ראשי של האפליקציה">
+      <!-- ul/li = רשימה לא ממוספרת של קישורים -->
+      <ul>
+        <!-- data-section = מאפיין מותאם ש-JavaScript קורא כדי לדעת לאיזה אזור לעבור -->
+        <li><a href="#welcome" data-section="welcome">מסך הבית</a></li>
+        <li><a href="#intro" data-section="intro">הוראות משחק</a></li>
+        <li><a href="#game-zone" data-section="game-zone">אזור המשחק</a></li>
+        <li><a href="#qa" data-section="qa">שאלות ותשובות</a></li>
+        <li><a href="#about" data-section="about">אודות ורפלקציה</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- main = התוכן המרכזי של הדף (סמנטי - לא header ולא footer) -->
+  <!-- id="main-content" = עוגן לקישור הדילוג -->
+  <main id="main-content">
+    <!-- role="status" + aria-live="polite" = קורא מסך מקריא שינויים בטקסט הזה -->
+    <p id="game-status" class="status-live" role="status" aria-live="polite" aria-atomic="true"></p>
+
+    <!-- section = אזור תוכן עצמאי | id = מזהה ייחודי לניווט ול-JavaScript -->
+    <!-- מסך הבית - היחיד שגלוי בהתחלה (שאר ה-sections עם class="hidden") -->
+    <section id="welcome">
+      <h2>ברוכים הבאים לאפליקציית משחק הזיכרון!</h2>
+      <p>משחק זיכרון פשוט ואינטראקטיבי שנבנה בעמוד HTML אחד. מוכנים לאתגר?</p>
+      <!-- type="button" = כפתור שלא שולח טופס | data-section = מעבר לאזור המשחק -->
+      <button class="action-btn animate__animated animate__pulse" data-section="game-zone" type="button">
+        לחצו כאן לתחילת המשחק!
+      </button>
+      <p>להשמעת מוסיקת רקע למשחק לחץ כאן👇🏻</p>
+      <!-- audio: נגן מובנה | controls=פקדים | loop=חוזר | preload=טוען מראש -->
+      <audio controls loop preload="auto"
+        src="https://incompetech.com/music/royalty-free/mp3-royaltyfree/Monkeys%20Spinning%20Monkeys.mp3">
+        הדפדפן שלכם לא תומך בהשמעת מוזיקת רקע
+      </audio>
+    </section>
+
+    <!-- class="hidden" = מוסתר עד שלוחצים על "הוראות משחק" בתפריט -->
+    <section id="intro" class="hidden">
+      <h2>הוראות שימוש</h2>
+      <p>חוקי המשחק פשוטים:</p>
+      <!-- ol = רשימה ממוספרת (1,2,3...) -->
+      <ol>
+        <li>בחרו רמת קושי: קל, בינוני או קשה.</li>
+        <li>לחצו על קלף כדי לחשוף את התמונה.</li>
+        <li>מצאו את הקלף התואם בלוח.</li>
+        <li>
+          אם יש התאמה - תשמעו צליל והקלפים יישארו פתוחים. אם לא - הקלפים
+          ייסגרו אחרי שנייה.
+        </li>
+      </ol>
+    </section>
+
+    <!-- אזור המשחק - כאן fieldset, article ו-table -->
+    <section id="game-zone" class="hidden">
+      <h2>אזור המשחק המרכזי</h2>
+      <p>
+        בחרו רמת קושי כדי להתחיל לשחק (בכל בחירה או איפוס, הקלפים יתערבבו
+        מחדש!):
+      </p>
+
+      <!-- fieldset = קיבוץ סמנטי של כפתורים קשורים (כמו בטופס)
+             legend = כותרת הקבוצה - "בחירת רמת קושי"
+             data-level = אומר ל-JS איזו רמה לטעון (easy/medium/hard) -->
+      <fieldset class="level-picker">
+        <legend>בחירת רמת קושי</legend>
+        <button class="easy-link" data-level="easy" type="button" aria-label="רמה קלה 2 על 2">
+          קל (2X2)
+        </button>
+        <button class="medium-link" data-level="medium" type="button" aria-label="רמה בינונית 3 על 3">
+          בינוני (3X3)
+        </button>
+        <button class="hard-link" data-level="hard" type="button" aria-label="רמה קשה 4 על 4">
+          קשה (4X4)
+        </button>
+      </fieldset>
+
+      <!-- article = תוכן עצמאי שאפשר לשתף בנפרד - כאן כל רמת משחק -->
+      <!-- הטבלה ריקה ב-HTML - JavaScript בונה את הקלפים בזמן טעינה -->
+      <article id="level-easy" class="game-level hidden">
+        <h3 id="easy-heading">רמה קלה - 2X2</h3>
+        <!-- aria-labelledby = מקשר את הטבלה לכותרת h3 לנגישות -->
+        <table aria-labelledby="easy-heading">
+          <!-- caption = כותרת הטבלה שמופיעה מעליה -->
+          <caption>
+            לוח משחק ברמת קושי קלה
+          </caption>
+        </table>
+        <button class="action-btn reset-btn" data-reset="easy-card" type="button">
+          איפוס וערבוב מחדש
+        </button>
+        <p class="win" id="easy-win" role="status">
+          כל הכבוד, ניצחת ברמה הקלה!
+        </p>
+      </article>
+
+      <article id="level-medium" class="game-level hidden">
+        <h3 id="medium-heading">רמה בינונית - 3X3</h3>
+        <table aria-labelledby="medium-heading">
+          <caption>
+            לוח משחק ברמת קושי בינונית
+          </caption>
+        </table>
+        <button class="action-btn reset-btn" data-reset="medium-card" type="button">
+          איפוס וערבוב מחדש
+        </button>
+        <p class="win" id="medium-win" role="status">
+          עבודה מצוינת! פיצחת את הרמה הבינונית!
+        </p>
+      </article>
+
+      <article id="level-hard" class="game-level hidden">
+        <h3 id="hard-heading">רמה קשה - 4X4</h3>
+        <table aria-labelledby="hard-heading">
+          <caption>
+            לוח משחק ברמת קושי קשה
+          </caption>
+        </table>
+        <button class="action-btn reset-btn" data-reset="hard-card" type="button">
+          איפוס וערבוב מחדש
+        </button>
+        <p class="win" id="hard-win" role="status">
+          מדהים! אתה אשף זיכרון אמיתי!
+        </p>
+      </article>
+    </section>
+
+    <!-- Q&A: details+summary = אקורדיון - שאלה שנפתחת בלחיצה -->
+    <section id="qa" class="hidden">
+      <h2>שאלות ותשובות (Q&amp;A)</h2>
+      <details>
+        <summary>מהו מבנה האפליקציה וכיצד היא מתנהגת כ-SPA?</summary>
+        <p>
+          האפליקציה בנויה בקובץ index.html אחד. מעבר בין אזורים נעשה עם
+          JavaScript שמסתיר ומציג חלקים בעזרת המחלקה hidden.
+        </p>
+      </details>
+      <details>
+        <summary>מדוע אין שימוש בתגיות div או span?</summary>
+        <p>
+          בתרגיל הוחלט להשתמש רק בתגיות סמנטיות כמו section, article, nav,
+          fieldset ו-figure.
+        </p>
+      </details>
+      <details>
+        <summary>איך מתבצעת ערבוב הקלפים בכל רמה?</summary>
+        <p>
+          לכל רמת קושי מוגדרת מפה לוגית של המספרים, וה-JavaScript משתמש
+          בפונקציית shuffle כדי לערבב את המערך ולהציב מחדש את הקלפים בטבלה.
+        </p>
+      </details>
+      <details>
+        <summary>איך המשחק יודע מתי ניצחנו ברמה מסוימת?</summary>
+        <p>
+          בכל פתיחת זוג קלפים שהותאם, הכפתורים ננעלים. בסיום כל תור נבדק אם כל
+          הקלפים באותה רמה נעולים; אם כן, מוצג מסר ניצחון ומופעלת אנימציית
+          קונפטי.
+        </p>
+      </details>
+      <iframe width="360" height="315" src="https://www.youtube.com/embed/nhLKQ_h7THA?si=oHITUHVTUlxaRgZv" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+    </section>
+
+    <!-- אודות: מידע על הפרויקט, שימוש ב-AI ורפלקציה -->
+    <section id="about" class="hidden">
+      <h2>אודות היוצר והאפליקציה</h2>
+      <p><strong>מגיש העבודה:</strong> אריאל פלישבסקי</p>
+      <h3>הסבר קצר על האפליקציה</h3>
+      <p>
+        אפליקציה זו מדמה משחק זיכרון דינמי בעל 3 רמות קושי שונות. המשחק פותח
+        במטרה להציג שליטה מלאה בעיצוב רספונסיבי, שימוש מושכל באנימציות תלת-ממד
+        ב-CSS טהור, ומניפולציה דינמית של ה-DOM באמצעות JavaScript.
+      </p>
+      <h3>פירוט שימוש בכלי בינה מלאכותית (AI)</h3>
+      <p>
+        במהלך תכנון ובניית הפרויקט נעזרתי במודל ה-AI של Gemini לצורך תכנון
+        ארכיטקטורת המעברים בתוך ה-SPA, כתיבת אלגוריתם ערבוב הקלפים הדינמי,
+        וביצוע בדיקות נגישות וניקוי כפילויות בקוד ה-CSS.
+      </p>
+      <h3>רפלקציה קצרה על התרגיל</h3>
+      <p>
+        נהניתי לבנות משחק בעמוד אחד ולראות איך HTML, CSS ו-JavaScript עובדים
+        ביחד. למדתי שאפשר ליצור אפליקציה אינטראקטיבית גם בלי Frameworks.
+      </p>
+    </section>
+  </main>
+
+  <!-- צליל התאמה - מוסתר, JavaScript מפעיל אותו כשמוצאים זוג -->
+  <audio id="match-sound" preload="auto">
+    <source src="https://www.w3schools.com/action.mp3" type="audio/mpeg" />
+  </audio>
+
+  <!-- footer = מידע תחתון קבוע (זכויות יוצרים) -->
+  <footer>
+    <p>
+      <!-- time datetime = תאריך מכונה לקריאה | &copy; = סימן זכויות יוצרים -->
+      &copy; <time datetime="2026">2026</time> אריאל פלישבסקי - מטלת סיום
+      בקורס בניית אפליקציות אינטראקטיביות
+    </p>
+    <p><small>האפליקציה נבנתה כ-SPA בעמוד HTML יחיד.</small></p>
+  </footer>
+
+  <!-- confetti = ספרייה חיצונית לאנימציית קונפטי בניצחון -->
+  <script src="https://cdn.jsdelivr.net/npm/@tsparticles/confetti@4.0.5/tsparticles.confetti.bundle.min.js"></script>
+  <script>
+    /* LEVEL_CONFIG = מפת הנתונים של כל רמה: אילו מספרי קלפים בכל שורה */
+    const LEVEL_CONFIG = {
+      easy: {
+        className: "easy-card",
+        levelLabel: "קלה",
+        grid: [
+          [1, 2],
+          [1, 2],
+        ],
+      },
+      medium: {
+        className: "medium-card",
+        levelLabel: "בינונית",
+        grid: [
+          [3, 4, 5],
+          [3, null, 5],
+          [4, 6, 6],
+        ],
+      },
+      hard: {
+        className: "hard-card",
+        levelLabel: "קשה",
+        grid: [
+          [7, 8, 9, 10],
+          [7, 8, 9, 10],
+          [11, 12, 13, 14],
+          [11, 12, 13, 14],
+        ],
+      },
+    };
+
+    /* בונה את לוחות המשחק ב-DOM מתוך LEVEL_CONFIG */
+    class MemoryBoardBuilder {
+      buildAll() {
+        Object.entries(LEVEL_CONFIG).forEach(([levelId, config]) => {
+          this.buildLevel(levelId, config);
+        });
+      }
+
+      buildLevel(levelId, config) {
+        const table = document.querySelector(`#level-${levelId} table`);
+        const tbody = document.createElement("tbody");
+        config.grid.forEach((row) => {
+          const tr = document.createElement("tr");
+          row.forEach((cell) => {
+            const td = document.createElement("td");
+            td.appendChild(
+              cell === null
+                ? this.createCenterCell()
+                : this.createCard(cell, config.className, config.levelLabel),
+            );
+            tr.appendChild(td);
+          });
+          tbody.appendChild(tr);
+        });
+        table.appendChild(tbody);
+      }
+
+      /* מבנה סמנטי של קלף: button(לחיץ) > figure > figcaption(גב) + img(תמונה) */
+      createCard(cardId, className, levelLabel) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `card ${className}`;
+        button.dataset.card = String(cardId);
+        button.setAttribute("aria-label", `קלף סגור ברמה ${levelLabel}`);
+        const figure = document.createElement("figure");
+        const figcaption = document.createElement("figcaption");
+        figcaption.setAttribute("aria-hidden", "true");
+        const img = document.createElement("img");
+        img.src = `https://picsum.photos/100?${cardId}`;
+        img.alt = `קלף משחק מספר ${cardId}`;
+        figure.appendChild(figcaption);
+        figure.appendChild(img);
+        button.appendChild(figure);
+        return button;
+      }
+
+      /* תא ריק באמצע לוח 3x3 - figure עם figcaption בלבד */
+      createCenterCell() {
+        const figure = document.createElement("figure");
+        figure.className = "center-cell";
+        figure.setAttribute("aria-label", "מרכז הלוח ללא קלף");
+        const figcaption = document.createElement("figcaption");
+        figcaption.textContent = "HTML GAME";
+        figure.appendChild(figcaption);
+        return figure;
+      }
+    }
+
+    /* משתני מצב המשחק - firstCard/secondCard = שני הקלפים הפתוחים כרגע */
+    const gameStatus = document.getElementById("game-status");
+    const matchSound = document.getElementById("match-sound");
+    let cards = [];
+    let firstCard = null;
+    let secondCard = null;
+    let lockBoard = false;
+    let winTriggered = { easy: false, medium: false, hard: false };
+
+    function playMatchSound() {
+      matchSound.currentTime = 0;
+      matchSound.play();
+    }
+
+    function updateGameStatus(message) {
+      if (gameStatus) gameStatus.textContent = message;
+    }
+
+    /* מעבר בין אזורי ה-SPA - מסתיר הכל ומציג section אחד */
+    function showSection(sectionId) {
+      document
+        .querySelectorAll("main > section")
+        .forEach((sec) => sec.classList.add("hidden"));
+      const target = document.querySelector("#" + sectionId);
+      if (target) {
+        target.classList.remove("hidden");
+        updateGameStatus(
+          "עברתם לאזור: " + target.querySelector("h2").textContent,
+        );
+      }
+    }
+
+    /* טוען רמת קושי: מציג article המתאים ומערבב קלפים */
+    function loadLevel(levelName) {
+      document
+        .querySelectorAll(".game-level")
+        .forEach((lvl) => lvl.classList.add("hidden"));
+      document
+        .querySelector("#level-" + levelName)
+        .classList.remove("hidden");
+      resetGame(levelName + "-card");
+      updateGameStatus("נבחרה רמת " + levelName + ". הקלפים עורבבו מחדש.");
+    }
+
+    /* אלגוריתם Fisher-Yates לערבוב אקראי של מערך */
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    /* מחליף בין הקלפים את data-card וה-src של התמונה */
+    function shuffleLevelCards(className) {
+      const levelCards = document.querySelectorAll("." + className);
+      const cardData = [];
+      levelCards.forEach((card) => {
+        cardData.push({
+          id: card.dataset.card,
+          src: card.querySelector("img").getAttribute("src"),
+        });
+      });
+      shuffleArray(cardData);
+      levelCards.forEach((card, index) => {
+        card.dataset.card = cardData[index].id;
+        card.querySelector("img").setAttribute("src", cardData[index].src);
+      });
+    }
+
+    function resetBoardState() {
+      firstCard = null;
+      secondCard = null;
+      lockBoard = false;
+    }
+
+    /* לוגיקת לחיצה על קלף: פתיחה, השוואה, סגירה או נעילה */
+    function bindCardEvents() {
+      cards.forEach((card) => {
+        card.addEventListener("click", () => {
+          if (lockBoard || card.disabled) return;
+          if (card === firstCard) return;
+          card.classList.add("open");
+          updateGameStatus("קלף נפתח. מספר קלף: " + card.dataset.card);
+          if (!firstCard) {
+            firstCard = card;
+            return;
+          }
+          secondCard = card;
+          if (firstCard.dataset.card === secondCard.dataset.card) {
+            firstCard.disabled = true;
+            secondCard.disabled = true;
+            playMatchSound();
+            updateGameStatus("התאמה! מצאתם זוג תואם.");
+            checkWin();
+            resetBoardState();
+          } else {
+            lockBoard = true;
+            updateGameStatus("אין התאמה. הקלפים ייסגרו בעוד שנייה.");
+            setTimeout(() => {
+              firstCard.classList.remove("open");
+              secondCard.classList.remove("open");
+              resetBoardState();
+            }, 1000);
+          }
+        });
+      });
+    }
+
+    /* בודק אם כל הקלפים ברמה נעולים = ניצחון */
+    function checkWin() {
+      const levels = [
+        { cls: "easy-card", id: "#easy-win", key: "easy", name: "קלה" },
+        {
+          cls: "medium-card",
+          id: "#medium-win",
+          key: "medium",
+          name: "בינונית",
+        },
+        { cls: "hard-card", id: "#hard-win", key: "hard", name: "קשה" },
+      ];
+      levels.forEach((lvl) => {
+        const levelCards = [...document.querySelectorAll("." + lvl.cls)];
+        if (levelCards.length === 0) return;
+        const isLevelComplete = levelCards.every((c) => c.disabled);
+        if (isLevelComplete && !winTriggered[lvl.key]) {
+          winTriggered[lvl.key] = true;
+          document.querySelector(lvl.id).style.display = "block";
+          updateGameStatus("ניצחון! סיימתם את הרמה ה" + lvl.name + "!");
+          triggerVictoryConfetti();
+        }
+      });
+    }
+
+    /* מאפס קלפים, מסתיר הודעת ניצחון ומערבב מחדש */
+    function resetGame(className) {
+      document.querySelectorAll("." + className).forEach((card) => {
+        card.classList.remove("open");
+        card.disabled = false;
+      });
+      document
+        .querySelectorAll(".win")
+        .forEach((w) => (w.style.display = "none"));
+      winTriggered.easy = false;
+      winTriggered.medium = false;
+      winTriggered.hard = false;
+      resetBoardState();
+      shuffleLevelCards(className);
+      updateGameStatus("המשחק אופס והקלפים עורבבו מחדש.");
+    }
+
+    function triggerVictoryConfetti() {
+      const duration = 200,
+        defaults = { origin: { y: 0.7 } };
+      function fire(particleRatio, opts) {
+        confetti(
+          Object.assign({}, defaults, opts, {
+            particleCount: Math.floor(duration * particleRatio),
+          }),
+        );
+      }
+      fire(0.25, { spread: 26, startVelocity: 55 });
+      fire(0.2, { spread: 60 });
+      fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+      fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+      fire(0.1, { spread: 120, startVelocity: 45 });
+    }
+
+    /* נקודת כניסה - בונה לוחות, מחבר אירועים, פותח במסך הבית */
+    function initApp() {
+      new MemoryBoardBuilder().buildAll();
+      cards = [...document.querySelectorAll(".card")];
+      bindCardEvents();
+
+      document.querySelectorAll("[data-section]").forEach((link) => {
+        link.addEventListener("click", (event) => {
+          event.preventDefault();
+          showSection(link.getAttribute("data-section"));
+        });
+      });
+
+      document.querySelectorAll("[data-level]").forEach((button) => {
+        button.addEventListener("click", () =>
+          loadLevel(button.getAttribute("data-level")),
+        );
+      });
+
+      document.querySelectorAll(".reset-btn").forEach((button) => {
+        button.addEventListener("click", () =>
+          resetGame(button.getAttribute("data-reset")),
+        );
+      });
+
+      document.body.addEventListener(
+        "click",
+        () => {
+          matchSound
+            .play()
+            .then(() => {
+              matchSound.pause();
+              matchSound.currentTime = 0;
+            })
+            .catch(() => { });
+        },
+        { once: true },
+      );
+
+      showSection("welcome");
+    }
+    initApp();
+  </script>
+</body>
+
+</html>
